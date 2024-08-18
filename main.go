@@ -16,5 +16,5 @@ func main() {
 	go Metrics(config.Metrics)
 
 	packets := make(chan []byte, 1000)
-	Collect(packets)
+	Collect(config, packets)
 }
