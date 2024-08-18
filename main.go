@@ -1,9 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"time"
+)
 
 func main() {
-	config := NewConfig()
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	fmt.Println(*config)
+	config := NewConfig()
+	log.Info().Any("config", config).Msg("Configured")
+
+	SetupMetrics()
+	go Metrics(config.Metrics)
+
+	packets := make(chan []byte, 1000)
+	Collect(packets)
 }
