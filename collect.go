@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/kahara/go-canner"
 	"github.com/rs/zerolog/log"
 	"net"
 	"time"
@@ -15,7 +16,7 @@ const (
 	backoffWhenConnected = time.Duration(5 * time.Second) // Sleep fixed amount of time when errors happen after connecting
 )
 
-func Collect(config *Config, packets chan []byte) {
+func Collect(config *Config, packets chan<- canner.Record) {
 
 	var (
 		err      error
@@ -54,8 +55,15 @@ func Collect(config *Config, packets chan []byte) {
 		for {
 			if scanner.Scan() {
 				line := scanner.Bytes()
-				log.Debug().Str("line", string(line)).Msg("Line scanned")
-				packets <- line
+				now := time.Now().UTC()
+				log.Debug().Time("received", now).Str("line", string(line)).Msg("Line scanned")
+				lineCopy := make([]byte, len(line))
+				copy(lineCopy, line)
+				packets <- canner.Record{
+					Timestamp:   now,
+					Description: "aprsis-raw",
+					Payload:     lineCopy,
+				}
 			} else {
 				log.Error().Err(scanner.Err()).Msgf("Error while scanning lines from %s, sleeping for %fs before starting over", hostport, backoffWhenConnected.Seconds())
 				time.Sleep(backoffWhenConnected)
