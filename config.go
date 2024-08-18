@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -23,6 +24,7 @@ type Config struct {
 	Callsign      string
 	Passcode      string
 	Filter        string
+	LoginLine     string
 	SkipSamecall  bool
 	Metrics       string
 }
@@ -77,6 +79,15 @@ func NewConfig() *Config {
 	} else {
 		config.Filter = filter
 	}
+
+	// Login line
+	// Example 'user OH2EWL pass -1 vers netcat 1.218 filter u/APBM1D'
+	config.LoginLine = fmt.Sprintf("user %s pass %s vers %s %s filter %s\n",
+		config.Callsign,
+		config.Passcode,
+		config.ClientName,
+		config.ClientVersion,
+		config.Filter)
 
 	// Same call (i.e., destination contains source) skipping to e.g. ignore DMR hotspots' traffic
 	skipSamecall := os.Getenv("SKIP_SAMECALL")
