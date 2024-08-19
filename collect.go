@@ -16,7 +16,7 @@ const (
 	backoffWhenConnected = time.Duration(5 * time.Second) // Sleep fixed amount of time when errors happen after connecting
 )
 
-func Collect(config *Config, packets chan<- canner.Record) {
+func Collect(config *Config, packets chan<- canner.Record, term <-chan bool, ack chan<- bool) {
 
 	var (
 		err      error
@@ -28,6 +28,13 @@ func Collect(config *Config, packets chan<- canner.Record) {
 	)
 
 	for {
+		select {
+		case <-term:
+			ack <- true
+			return
+		default:
+		}
+
 		if conn, err = net.Dial("tcp", hostport); err != nil {
 			log.Error().Err(err).Msgf("Error while dialing %s, sleeping for %fs before starting over", hostport, backoff)
 			time.Sleep(time.Duration(backoff) * time.Second)
@@ -53,6 +60,13 @@ func Collect(config *Config, packets chan<- canner.Record) {
 		// Consume APRS packets
 		scanner = bufio.NewScanner(conn)
 		for {
+			select {
+			case <-term:
+				ack <- true
+				return
+			default:
+			}
+
 			if scanner.Scan() {
 				line := scanner.Bytes()
 				now := time.Now().UTC()

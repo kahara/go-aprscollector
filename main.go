@@ -20,7 +20,9 @@ func main() {
 	go Metrics(config.Metrics)
 
 	packets := make(chan canner.Record, 1000)
-	go Collect(config, packets)
+	collectTerm := make(chan bool)
+	collectAck := make(chan bool)
+	go Collect(config, packets, collectTerm, collectAck)
 	go Process(config, packets)
 
 	sig := make(chan os.Signal, 1)
