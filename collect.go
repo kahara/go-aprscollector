@@ -30,6 +30,7 @@ func Collect(config *Config, packets chan<- canner.Record, term <-chan bool, ack
 	for {
 		select {
 		case <-term:
+			log.Info().Msg("Terminating collection")
 			ack <- true
 			return
 		default:
@@ -62,11 +63,13 @@ func Collect(config *Config, packets chan<- canner.Record, term <-chan bool, ack
 		for {
 			select {
 			case <-term:
+				log.Info().Msg("Terminating collection")
 				ack <- true
 				return
 			default:
 			}
 
+			// FIXME this blocks
 			if scanner.Scan() {
 				line := scanner.Bytes()
 				now := time.Now().UTC()
