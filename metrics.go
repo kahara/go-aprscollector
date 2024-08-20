@@ -23,13 +23,13 @@ func SetupMetrics() {
 		Namespace: Namespace,
 		Subsystem: Subsystem,
 		Name:      "packets_received_total",
-	}, []string{"tocall"})
+	}, []string{})
 
 	packets_skipped = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: Namespace,
 		Subsystem: Subsystem,
 		Name:      "packets_skipped_total",
-	}, []string{"tocall"})
+	}, []string{})
 }
 
 func Metrics(addrPort string) {

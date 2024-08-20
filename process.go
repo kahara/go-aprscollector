@@ -36,8 +36,10 @@ func Process(config *Config, collected <-chan canner.Record, processed chan<- ca
 			ack <- true
 			return
 		case record := <-collected:
+			packets_received.WithLabelValues().Inc()
 			if config.SkipSamecall && isSamecall(record.Payload) {
 				log.Debug().Str("packet", string(record.Payload)).Msg("Skipping same call")
+				packets_skipped.WithLabelValues().Inc()
 				continue
 			}
 			processed <- record

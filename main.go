@@ -37,4 +37,5 @@ func main() {
 	signal.Notify(sig, os.Interrupt)
 	signal.Notify(sig, syscall.SIGTERM)
 	log.Info().Any("signal", <-sig).Msg("Signal caught, exiting")
+
 }
