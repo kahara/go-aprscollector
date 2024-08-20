@@ -57,6 +57,7 @@ func Test(t *testing.T) {
 		AprsisServer: fakeAprsisServerAddress.String(),
 		LoginLine:    "user N0CALL pass -1 vers go-aprscollector-test v0 filter u/APBM1D",
 	}
+	t.Logf("Test server listening on %s", fakeAprsisServerAddress.String())
 
 	tests := []struct {
 		name    string
@@ -78,14 +79,22 @@ func Test(t *testing.T) {
 			ack := make(chan bool)
 			t.Logf("Connecting to " + config.AprsisServer)
 			go Collect(&config, records, term, ack)
+
 			for _, packet := range test.packets {
 				t.Logf("Requesting packet '%s'", packet)
 				serverPackets <- packet
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(time.Millisecond) // Let time pass
 
 				record := <-records
 				t.Logf("Received record '%#v'", record)
+
+				diff := time.Now().Sub(record.Timestamp)
+				if diff > time.Duration(5*time.Millisecond) {
+					t.Fatalf("Packet round trip took a bit too long: %s", diff)
+				}
 			}
+
+			// Close down this test's collector
 			term <- true
 			<-ack
 		})
