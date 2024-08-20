@@ -81,7 +81,7 @@ func NewConfig() *Config {
 	}
 
 	// Login line
-	// Example 'user OH2EWL pass -1 vers netcat 1.218 filter u/APBM1D'
+	// Example 'user N0CALL pass -1 vers netcat 1.218 filter u/APBM1D'
 	config.LoginLine = fmt.Sprintf("user %s pass %s vers %s %s filter %s\n",
 		config.Callsign,
 		config.Passcode,

@@ -29,7 +29,7 @@ func main() {
 	processed := make(chan canner.Record, 1000)
 	processTerm := make(chan bool)
 	processAck := make(chan bool)
-	go Process(config, processed, processTerm, processAck)
+	go Process(config, collected, processed, processTerm, processAck)
 
 	// Store
 
