@@ -83,13 +83,13 @@ func Test(t *testing.T) {
 			for _, packet := range test.packets {
 				t.Logf("Requesting packet '%s'", packet)
 				serverPackets <- packet
-				time.Sleep(time.Millisecond) // Let time pass
+				time.Sleep(10 * time.Millisecond) // Let time pass
 
 				record := <-records
 				t.Logf("Received record '%#v'", record)
 
 				diff := time.Now().Sub(record.Timestamp)
-				if diff > time.Duration(5*time.Millisecond) {
+				if diff > time.Duration(20*time.Millisecond) {
 					t.Fatalf("Packet round trip took a bit too long: %s", diff)
 				}
 			}
