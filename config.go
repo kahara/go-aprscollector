@@ -15,6 +15,7 @@ const (
 	DefaultFilter        = "u/APBM*" // https://github.com/aprsorg/aprs-deviceid/blob/ddfee32784215a2a4a5fe74c69812cfd87bd098c/tocalls.yaml#L341
 	DefaultSkipSamecall  = true
 	DefaultMetrics       = ":9108"
+	DefaultDestination   = ""
 )
 
 type Config struct {
@@ -27,6 +28,7 @@ type Config struct {
 	LoginLine     string
 	SkipSamecall  bool
 	Metrics       string
+	Destination   string
 }
 
 func NewConfig() *Config {
@@ -104,6 +106,14 @@ func NewConfig() *Config {
 		config.Metrics = DefaultMetrics
 	} else {
 		config.Metrics = metrics
+	}
+
+	// Storage destination
+	destination := os.Getenv("DESTINATION")
+	if destination == "" {
+		config.Destination = DefaultDestination
+	} else {
+		config.Destination = destination
 	}
 
 	return &config

@@ -32,10 +32,12 @@ func main() {
 	go Process(config, collected, processed, processTerm, processAck)
 
 	// Store
+	storeTerm := make(chan bool)
+	storeAck := make(chan bool)
+	go Store(config, processed, storeTerm, storeAck)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 	signal.Notify(sig, syscall.SIGTERM)
 	log.Info().Any("signal", <-sig).Msg("Signal caught, exiting")
-
 }
