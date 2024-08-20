@@ -19,11 +19,19 @@ func main() {
 	SetupMetrics()
 	go Metrics(config.Metrics)
 
-	packets := make(chan canner.Record, 1000)
+	// Collect
+	collected := make(chan canner.Record, 1000)
 	collectTerm := make(chan bool)
 	collectAck := make(chan bool)
-	go Collect(config, packets, collectTerm, collectAck)
-	go Process(config, packets)
+	go Collect(config, collected, collectTerm, collectAck)
+
+	// Process
+	processed := make(chan canner.Record, 1000)
+	processTerm := make(chan bool)
+	processAck := make(chan bool)
+	go Process(config, processed, processTerm, processAck)
+
+	// Store
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
