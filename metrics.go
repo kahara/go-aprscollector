@@ -16,6 +16,7 @@ const (
 var (
 	packets_received *prometheus.CounterVec
 	packets_skipped  *prometheus.CounterVec
+	packets_stored   *prometheus.CounterVec
 )
 
 func SetupMetrics() {
@@ -29,6 +30,11 @@ func SetupMetrics() {
 		Namespace: Namespace,
 		Subsystem: Subsystem,
 		Name:      "packets_skipped_total",
+	}, []string{})
+	packets_stored = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: Namespace,
+		Subsystem: Subsystem,
+		Name:      "packets_stored_total",
 	}, []string{})
 }
 
