@@ -1,0 +1,18 @@
+services:
+  aprscollector:
+    image: ghcr.io/kahara/go-aprscollector:latest
+    pull_policy: always
+    volumes:
+      - /data/aprscollector/apbm:/destination
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50m'
+        max-file: 5
+    environment:
+      APRSIS_SERVER: euro.aprs2.net:14580
+      CALLSIGN: OH2EWL
+      DESTINATION: /destination
+    ports:
+      - '9109:9108'
+    restart: always
