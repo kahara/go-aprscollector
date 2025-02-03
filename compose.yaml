@@ -1,6 +1,6 @@
 services:
   aprscollector:
-    image: ghcr.io/kahara/go-aprscollector:initial
+    image: ghcr.io/kahara/go-aprscollector:latest
     pull_policy: always
     volumes:
       - /data/aprscollector/apbm:/destination
