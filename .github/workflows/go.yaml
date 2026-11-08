@@ -19,12 +19,11 @@ jobs:
         with:
           args: ./...
 
-  test-build-push:
+  test:
     needs: gosec
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v7
       - name: Set up Go
@@ -35,6 +34,15 @@ jobs:
         run: go get .
       - name: Unit test
         run: go test -v .
+
+  build-push:
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
