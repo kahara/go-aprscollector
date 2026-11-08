@@ -1,23 +1,28 @@
 package main
 
 import (
-	"github.com/kahara/go-canner"
-	"github.com/rs/zerolog/log"
 	"net"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/kahara/go-canner"
+	"github.com/rs/zerolog/log"
 )
 
 var (
 	fakeAprsisServerAddress net.Addr
+	serverLock              sync.Mutex
 )
 
-func fakeAprsisServer(packets <-chan string, term <-chan bool, ack chan<- bool) {
+func fakeAprsisServer(packets <-chan string) {
 	l, err := net.Listen("tcp", "")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not listen ¯\\_(?)_/¯")
 	}
+	serverLock.Lock()
 	fakeAprsisServerAddress = l.Addr()
+	serverLock.Unlock()
 	defer l.Close()
 
 	for {
@@ -29,9 +34,6 @@ func fakeAprsisServer(packets <-chan string, term <-chan bool, ack chan<- bool) 
 
 		for {
 			select {
-			case <-term:
-				ack <- true // Notify back that were done
-				return
 			case packet := <-packets:
 				packet = packet + "\n"
 				conn.Write([]byte(packet))
@@ -41,23 +43,26 @@ func fakeAprsisServer(packets <-chan string, term <-chan bool, ack chan<- bool) 
 }
 
 func Test(t *testing.T) {
-	serverPackets := make(chan string)
-	serverTerm := make(chan bool)
-	serverAck := make(chan bool)
-	go fakeAprsisServer(serverPackets, serverTerm, serverAck)
+	packets := make(chan string)
+	go fakeAprsisServer(packets)
 
 	for {
 		time.Sleep(time.Millisecond)
+		serverLock.Lock()
 		if fakeAprsisServerAddress != nil {
+			serverLock.Unlock()
 			break
 		}
+		serverLock.Unlock()
 	}
 
+	serverLock.Lock()
 	config := Config{
 		AprsisServer: fakeAprsisServerAddress.String(),
 		LoginLine:    "user N0CALL pass -1 vers go-aprscollector-test v0 filter u/APBM1D",
 	}
 	t.Logf("Test server listening on %s", fakeAprsisServerAddress.String())
+	serverLock.Unlock()
 
 	tests := []struct {
 		name    string
@@ -77,12 +82,12 @@ func Test(t *testing.T) {
 			records := make(chan canner.Record)
 			term := make(chan bool)
 			ack := make(chan bool)
-			t.Logf("Connecting to " + config.AprsisServer)
+			t.Logf("Connecting to %s", config.AprsisServer)
 			go Collect(&config, records, term, ack)
 
 			for _, packet := range test.packets {
 				t.Logf("Requesting packet '%s'", packet)
-				serverPackets <- packet
+				packets <- packet
 				time.Sleep(100 * time.Millisecond) // Let time pass
 
 				record := <-records
@@ -93,14 +98,6 @@ func Test(t *testing.T) {
 					t.Fatalf("Packet round trip took a bit too long: %s", diff)
 				}
 			}
-
-			// Close down this test's collector
-			term <- true
-			<-ack
 		})
 	}
-
-	// Shut the "fake" server down cleanly
-	serverTerm <- true
-	<-serverAck
 }
