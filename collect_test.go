@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/kahara/go-canner"
-	"github.com/rs/zerolog/log"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/kahara/go-canner"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -77,7 +78,7 @@ func Test(t *testing.T) {
 			records := make(chan canner.Record)
 			term := make(chan bool)
 			ack := make(chan bool)
-			t.Logf("Connecting to " + config.AprsisServer)
+			t.Logf("Connecting to %s", config.AprsisServer)
 			go Collect(&config, records, term, ack)
 
 			for _, packet := range test.packets {
